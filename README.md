@@ -1,75 +1,96 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
-</p>
+# Hi Nest!
 
-[travis-image]: https://api.travis-ci.org/nestjs/nest.svg?branch=master
-[travis-url]: https://travis-ci.org/nestjs/nest
-[linux-image]: https://img.shields.io/travis/nestjs/nest/master.svg?label=linux
-[linux-url]: https://travis-ci.org/nestjs/nest
-  
-  <p align="center">A progressive <a href="http://nodejs.org" target="blank">Node.js</a> framework for building efficient and scalable server-side applications, heavily inspired by <a href="https://angular.io" target="blank">Angular</a>.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore"><img src="https://img.shields.io/npm/dm/@nestjs/core.svg" alt="NPM Downloads" /></a>
-<a href="https://travis-ci.org/nestjs/nest"><img src="https://api.travis-ci.org/nestjs/nest.svg?branch=master" alt="Travis" /></a>
-<a href="https://travis-ci.org/nestjs/nest"><img src="https://img.shields.io/travis/nestjs/nest/master.svg?label=linux" alt="Linux" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#5" alt="Coverage" /></a>
-<a href="https://gitter.im/nestjs/nestjs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=body_badge"><img src="https://badges.gitter.im/nestjs/nestjs.svg" alt="Gitter" /></a>
-<a href="https://opencollective.com/nest#backer"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec"><img src="https://img.shields.io/badge/Donate-PayPal-dc3d53.svg"/></a>
-  <a href="https://twitter.com/nestframework"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+노마드코더의 강좌를 들으며 nestjs 를 공부해보는 시간
 
-## Description
+### 강의 노트!
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+1. 태초에 main.ts가 있었다.
+2. Controller === 라우터 : url 을 가져오고 함수를 실행
 
-## Installation
+```jsx
+import { Controller, Get } from '@nestjs/common';
 
-```bash
-$ npm install
+@Controller('movies') //여기서 url의 entry point가 url/movies 로 정해지고,
+export class MoviesController {
+  @Get()
+  getAll() {
+    return "This will return all movies";
+  }
+	@Get('/hello') // url/movies/hello 가 된다.
+	sayHello() {
+		return "Hello World!";
+	}
+}
 ```
 
-## Running the app
+- **데코레이터와 함수는 붙어있어야 한다.**
 
-```bash
-# development
-$ npm run start
+1. 하지만 NestJS 에서 Controller 는 URL 의 구분, 즉 라우팅만 하는 것을 권장함.
 
-# watch mode
-$ npm run start:dev
+- 위의 예시처럼 컨트롤러가 직접 '무언가'를 하는 것은 권장하지 않고,
+- 실제 function들을 가지는 **Service**에서 가져와서 쓰는 것을 권장
 
-# production mode
-$ npm run start:prod
+```jsx
+// app.service.ts
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class AppService {
+  getHello(): string {
+    return 'Hello Nest!';
+  }
+  getHi() : string {
+    return 'Hi Nest!';
+  }
+}
+
+// app.controller.ts
+import { Controller, Get } from '@nestjs/common';
+import { AppService } from './app.service';
+
+@Controller()
+export class AppController {
+  constructor(private readonly appService: AppService) {}
+
+  @Get()
+  getHello(): string {
+    return this.appService.getHello();
+  }
+  @Get("/hello")
+  sayHello() : string {
+    return this.appService.getHi();
+		//app.service.ts에서 export하는 AppService 객체의
+		//getHi 함수를 실행한다.
+  }
+}
 ```
 
-## Test
+1. AppModule 은 우리가 하는 모든 것을 import 한다.
 
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+```jsx
+//in main.ts
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+	// app 은 NestFactory 가 AppModule을 매개로 만든 객체이기 때문에
+  // 우리가 무슨 기능을 추가하든
+  // AppModule 안에 import 되어야만 반영된다.
+  await app.listen(3000);
+}
 ```
 
-## Support
+1. Put 은 모든 리소스를 바꾸고, Patch 는 일부 리소스만 바꾼다.
+2. :param 이 위에 있으면 querystring 사용 불가
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-  Nest is [MIT licensed](LICENSE).
+```jsx
+ @Get("/:id")
+  getOne(@Param("id") movieId : string) { // * id 라는 파라미터를 id 라는 argument에 string타입으로 저장한다.
+    return `This will return one movie with the id : ${movieId}`;
+  }
+// 이렇게 있다면?
+@Get("search")
+  search() {
+    return `We are searching for a movie with title : `
+  }
+// /search?year=2020 으로 GET 요청을 받았을 때
+// id = search 로 인식함
+```
