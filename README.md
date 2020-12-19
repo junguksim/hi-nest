@@ -164,14 +164,48 @@ async function bootstrap() {
          ```
 
       9. NestJS의 프로젝트 구조 정리
+
          1. 각각의 기능은 각각의 Module을 가진다.
          2. 이 Module 들이 모두 import 되어서 하나로 합쳐져 나가는 곳이 app.module.ts 이다.
          3. 각각의 Module 들은 각각의 Service 와 Controller를 import 하고 의존성 주입
             1. Controller : 라우팅과 Service 에 정의된 기능들을 리턴
             2. Service : 실제 기능들을 정의 
+
       10. Jest Hooks
+
           1. beforeEach, afterEach: 각 기능의 테스트 전/후에 할 일을 정의
           2. beforeAll, afterAll : 기능 전반의 테스트 전/후에 할 일을 정의
+
       11. e2e(end to end) 테스트
+
           1. 특정 URL에 테스트를 보낸다(Controller, service, pipe 등 모든 것에 대한 테스트를 한꺼번에 함)
+
           2. 기능 단위별 테스트가 어려울 때 주로 쓰인다
+
+             ```typescript
+              beforeAll(async () => {
+                 const moduleFixture: TestingModule = await Test.createTestingModule({
+                   imports: [AppModule],
+                 }).compile();
+             
+                 app = moduleFixture.createNestApplication();
+                  //주의할 점
+                  //테스트를 위해 만들어진 서버인 app은 
+                  //main.ts 에서 정의되어 실제 서비스되는 서버와 같은 환경이어야 한다.
+                 app.useGlobalPipes(
+                   new ValidationPipe({
+                     whitelist : true,
+                     forbidNonWhitelisted : true,
+                     transform : true
+                   })
+                 )
+                  //위 주석에서 여기까지의 코드가 없을 경우(파이프를 사용하지 않을 경우)
+                  //테스팅용 서버는 main.ts에서 가진 파이프가 없는 상태가 되는 것이고
+                  //이는 실제 서버와의 테스트 결과가 다르게 될 수 있느 결과를 낳는다.
+                 await app.init();
+               });
+             ```
+
+             
+
+   
